@@ -3,7 +3,15 @@
 
 ## Purpose
 
-This program dynamically downloads, imports, and utilizes a Python function from a remote GitHub repository as LangGraph agent. It analyzes the module to install necessary dependencies, import required modules, and dynamically create instances of functions or classes, particularly focusing on Pydantic models. The program builds a graph using the dynamically imported functions and provides an interactive interface for users to interact with the imported agent.
+This program dynamically downloads, imports, and utilizes a Python function from a remote 
+GitHub repository as LangGraph agent. It analyzes the module to install necessary 
+dependencies, import required modules, and dynamically create instances of functions or 
+classes, particularly focusing on Pydantic models. The program builds a graph using the 
+dynamically imported functions and provides an interactive interface for users to interact 
+with the imported agent.
+
+the Agent in this case is a simple chatbot that can be used to demonstrate the capabilities of 
+ dynamic agent composition and LangGraph graph building.
 
 ## Functionality
 
