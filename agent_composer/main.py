@@ -4,12 +4,15 @@ import requests
 import sys
 import importlib
 import ast
+import logging
 from pydantic import BaseModel
 from dotenv import load_dotenv, find_dotenv
 from models.agent_state import AgentState
 from langgraph.graph import StateGraph
 from langsmith import traceable
 
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @traceable(run_type="chain")
 def download_file_from_github(url, save_path):
@@ -126,9 +129,9 @@ def install_dependencies(modules):
                 stderr=subprocess.PIPE,
                 text=True
             )
-            print(f"Successfully installed {module}:\n{result.stdout}")
+            logging.info(f"Successfully installed {module}:\n{result.stdout}")
         except subprocess.CalledProcessError as e:
-            print(f"Failed to install {module}:\n{e.stderr}")
+            logging.error(f"Failed to install {module}:\n{e.stderr}")
 
 
 @traceable(run_type="chain")
@@ -163,18 +166,18 @@ def get_function_signature_and_types(file_path, function_name):
     with open(file_path, 'r') as file:
         file_content = file.read()
 
-    # Parse the file content
-    tree = ast.parse(file_content, filename=file_path)
+        # Parse the file content
+        tree = ast.parse(file_content, filename=file_path)
 
-    # Find the function definition
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == function_name:
-            # Extract argument type hints
-            arg_types = {}
-            for arg in node.args.args:
-                if arg.annotation:
-                    arg_types[arg.arg] = eval(arg.annotation.id, globals())
-            return arg_types
+        # Find the function definition
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == function_name:
+                # Extract argument type hints
+                arg_types = {}
+                for arg in node.args.args:
+                    if arg.annotation:
+                        arg_types[arg.arg] = eval(arg.annotation.id, globals())
+                return arg_types
 
 
 @traceable(run_type="chain")
@@ -253,21 +256,21 @@ def download_and_import_agent():
 
     # Step 3: Parse the file to get import statements
     imported_modules = get_imports(save_path)
-    print(f"Imported modules: {imported_modules}")
+    logging.info(f"Imported modules: {imported_modules}")
 
     # Step 4: Install dependencies
     install_dependencies(imported_modules)
 
     # Step 5: Parse the file to get function names
     function_names = get_function_names(save_path)
-    print(f"Functions in {save_path}: {function_names}")
+    logging.info(f"Functions in {save_path}: {function_names}")
 
     # Step 6: Get function signature and type hints without importing
     desired_function_name = 'chatbot'
     if desired_function_name in function_names:
         # Get function signature and type hints
         type_hints = get_function_signature_and_types(save_path, desired_function_name)
-        print(f"Type hints of {desired_function_name}: {type_hints}")
+        logging.info(f"Type hints of {desired_function_name}: {type_hints}")
 
         # Step 7: Determine necessary imports based on type hints
         needed_imports = determine_needed_imports(type_hints)
@@ -278,17 +281,17 @@ def download_and_import_agent():
         # Step 9: Dynamically import the function with the necessary imports included
         module_name = os.path.basename(save_path).replace('.py', '')
         composed_agent = dynamic_import(module_name, desired_function_name)
-        print(f"Dynamically imported function: {composed_agent.__name__}")
+        logging.info(f"Dynamically imported function: {composed_agent.__name__}")
 
         # Identify Pydantic types and create instances
         for param_name, param_type in type_hints.items():
             if isinstance(param_type, type) and issubclass(param_type, BaseModel):
-                print(f"{param_name} is of Pydantic type {param_type}")
+                logging.info(f"{param_name} is of Pydantic type {param_type}")
             else:
-                print(f"{param_name} is of type {param_type}, which is not a Pydantic model.")
+                logging.info(f"{param_name} is of type {param_type}, which is not a Pydantic model.")
         return composed_agent
     else:
-        print(f"Function '{desired_function_name}' not found in the module.")
+        logging.info(f"Function '{desired_function_name}' not found in the module.")
 
     return None
 
@@ -304,7 +307,7 @@ def main():
     """
     # Load the .env file
     path = find_dotenv()
-    print(path)
+    logging.info(path)
     load_dotenv(override=True, verbose=True)
 
     chatbot_agent = download_and_import_agent()
