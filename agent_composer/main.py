@@ -1,16 +1,14 @@
 import subprocess
-
-import requests
 import os
+import requests
 import sys
 import importlib
 import ast
 import inspect
 import typing
 from pydantic import BaseModel, ValidationError
-
 from dotenv import load_dotenv, find_dotenv
-import os
+from models.session_config import SessionConfig
 
 
 def download_file_from_github(url, save_path):
@@ -58,9 +56,16 @@ def get_imports(file_path):
 def install_dependencies(modules):
     for module in modules:
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", module])
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", module],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            print(f"Successfully installed {module}:\n{result.stdout}")
         except subprocess.CalledProcessError as e:
-            print(f"Failed to install {module}: {e}")
+            print(f"Failed to install {module}:\n{e.stderr}")
 
 
 def import_function(module_name, function_name):
@@ -96,16 +101,15 @@ def create_pydantic_instance(model_class):
 
 
 def main():
-
     # Load the .env file
     path = find_dotenv()
     print(path)
     load_dotenv(override=True, verbose=True)
 
     # URL of the file to download from GitHub
-    file_url = 'https://raw.githubusercontent.com/username/repository/branch/path/to/file.py'
+    file_url = 'https://raw.githubusercontent.com/BenderScript/agent_composer/main/resources/remote_agents/chatbot.py'
     # Path where the downloaded file will be saved
-    save_path = '/path/to/cloned/repo/utils.py'
+    save_path = 'resources/local_agents/chatbot.py'
 
     # Step 1: Download the file from GitHub
     download_file_from_github(file_url, save_path)
@@ -126,10 +130,10 @@ def main():
     print(f"Functions in {save_path}: {function_names}")
 
     # Step 6: Dynamically import and use the function
-    desired_function_name = 'process_data'
+    desired_function_name = 'chatbot'
     if desired_function_name in function_names:
         module_name = os.path.basename(save_path).replace('.py',
-                                                          '')  # The name of the module (file name without .py extension)
+                                                          '')
 
         # Dynamically import the function
         process_data = import_function(module_name, desired_function_name)
@@ -158,5 +162,6 @@ def main():
     else:
         print(f"Function '{desired_function_name}' not found in the module.")
 
-if __name__ == "_main_":
+
+if __name__ == "__main__":
     main()
