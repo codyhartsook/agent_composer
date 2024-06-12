@@ -6,7 +6,8 @@ import importlib
 import ast
 from pydantic import BaseModel
 from dotenv import load_dotenv, find_dotenv
-from models.session_config import SessionConfig
+from models.agent_state import AgentState
+from langgraph.graph import StateGraph
 
 
 def download_file_from_github(url, save_path):
@@ -135,12 +136,7 @@ def determine_needed_imports(type_hints):
     return needed_imports
 
 
-def main():
-    # Load the .env file
-    path = find_dotenv()
-    print(path)
-    load_dotenv(override=True, verbose=True)
-
+def download_and_import_agent():
     # URL of the file to download from GitHub
     file_url = ('https://raw.githubusercontent.com/BenderScript/agent_composer/main/agent_composer/resources'
                 '/remote_agents/chatbot.py')
@@ -190,8 +186,34 @@ def main():
                 print(f"{param_name} is of Pydantic type {param_type}")
             else:
                 print(f"{param_name} is of type {param_type}, which is not a Pydantic model.")
+        return composed_agent
     else:
         print(f"Function '{desired_function_name}' not found in the module.")
+
+    return None
+
+
+def main():
+    # Load the .env file
+    path = find_dotenv()
+    print(path)
+    load_dotenv(override=True, verbose=True)
+
+    chatbot_agent = download_and_import_agent()
+    graph_builder = StateGraph(AgentState)
+    graph_builder.add_node("chatbot_agent", chatbot_agent)
+    graph_builder.set_entry_point("chatbot_agent")
+    graph_builder.set_finish_point("chatbot_agent")
+    graph = graph_builder.compile()
+
+    while True:
+        user_input = input("User: ")
+        if user_input.lower() in ["quit", "exit", "q"]:
+            print("Goodbye!")
+            break
+        for event in graph.stream({"messages": ("user", user_input)}):
+            for value in event.values():
+                print("Assistant:", value["messages"][-1].content)
 
 
 if __name__ == "__main__":

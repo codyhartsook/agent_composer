@@ -34,7 +34,7 @@ class SessionConfig(BaseModel):
     images: Dict[str, Any] = {}
     initialized: bool = False  # Flag to check if initialization has been done
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         # Important to call super().__init__(**kwargs) to let Pydantic do its setup
         super().__init__(**kwargs)
         # Check if OPENAI_API_KEY or AZURE_OPENAI_API_KEY is set
