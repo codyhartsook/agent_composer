@@ -11,8 +11,8 @@ from models.agent_state import AgentState
 from langgraph.graph import StateGraph
 from langsmith import traceable
 
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 @traceable(run_type="chain")
 def download_file_from_github(url, save_path):
