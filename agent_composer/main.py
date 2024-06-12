@@ -8,8 +8,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv, find_dotenv
 from models.agent_state import AgentState
 from langgraph.graph import StateGraph
+from langsmith import traceable
 
 
+@traceable(run_type="chain")
 def download_file_from_github(url, save_path):
     """
     Downloads a file from a specified GitHub URL and saves it locally.
@@ -28,6 +30,7 @@ def download_file_from_github(url, save_path):
         file.write(response.content)
 
 
+@traceable(run_type="chain")
 def add_imports_to_file(file_path, imports):
     """
     Adds the specified import statements to the beginning of the given file.
@@ -49,6 +52,7 @@ def add_imports_to_file(file_path, imports):
         file.write(new_content)
 
 
+@traceable(run_type="chain")
 def get_function_names(file_path):
     """
     Extracts the names of all functions defined in the specified file.
@@ -71,6 +75,7 @@ def get_function_names(file_path):
     return function_names
 
 
+@traceable(run_type="chain")
 def get_imports(file_path):
     """
     Extracts all import statements from the specified file.
@@ -101,6 +106,7 @@ def get_imports(file_path):
     return imported_modules
 
 
+@traceable(run_type="chain")
 def install_dependencies(modules):
     """
     Installs the specified Python modules using pip.
@@ -125,6 +131,7 @@ def install_dependencies(modules):
             print(f"Failed to install {module}:\n{e.stderr}")
 
 
+@traceable(run_type="chain")
 def dynamic_import(module_name, function_name):
     """
     Dynamically imports a function from a specified module.
@@ -141,6 +148,7 @@ def dynamic_import(module_name, function_name):
     return function
 
 
+@traceable(run_type="chain")
 def get_function_signature_and_types(file_path, function_name):
     """
     Extracts the type hints and argument types of a specified function in the given file.
@@ -169,6 +177,7 @@ def get_function_signature_and_types(file_path, function_name):
             return arg_types
 
 
+@traceable(run_type="chain")
 def create_pydantic_instance(model_class):
     """
     Creates an instance of a Pydantic model class with sample data.
@@ -196,6 +205,7 @@ def create_pydantic_instance(model_class):
     return model_class(**sample_data)
 
 
+@traceable(run_type="chain")
 def determine_needed_imports(type_hints):
     """
     Determines the necessary import statements based on type hints.
@@ -219,6 +229,7 @@ def determine_needed_imports(type_hints):
     return needed_imports
 
 
+@traceable(run_type="chain")
 def download_and_import_agent():
     """
     Downloads a Python file from a specified GitHub URL, adds necessary imports,
@@ -282,6 +293,7 @@ def download_and_import_agent():
     return None
 
 
+@traceable(run_type="chain")
 def main():
     """
     The main function that initializes the environment, downloads and imports the agent,
