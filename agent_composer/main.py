@@ -11,6 +11,16 @@ from langgraph.graph import StateGraph
 
 
 def download_file_from_github(url, save_path):
+    """
+    Downloads a file from a specified GitHub URL and saves it locally.
+
+    Parameters:
+    url (str): The URL of the file to download.
+    save_path (str): The local path where the file should be saved.
+
+    Returns:
+    None
+    """
     response = requests.get(url)
     response.raise_for_status()  # Check if the request was successful
 
@@ -19,6 +29,16 @@ def download_file_from_github(url, save_path):
 
 
 def add_imports_to_file(file_path, imports):
+    """
+    Adds the specified import statements to the beginning of the given file.
+
+    Parameters:
+    file_path (str): The path to the file to modify.
+    imports (list of str): A list of import statements to add.
+
+    Returns:
+    None
+    """
     with open(file_path, 'r') as file:
         content = file.read()
 
@@ -30,6 +50,15 @@ def add_imports_to_file(file_path, imports):
 
 
 def get_function_names(file_path):
+    """
+    Extracts the names of all functions defined in the specified file.
+
+    Parameters:
+    file_path (str): The path to the file to analyze.
+
+    Returns:
+    list of str: A list of function names.
+    """
     with open(file_path, 'r') as file:
         file_content = file.read()
 
@@ -43,6 +72,15 @@ def get_function_names(file_path):
 
 
 def get_imports(file_path):
+    """
+    Extracts all import statements from the specified file.
+
+    Parameters:
+    file_path (str): The path to the file to analyze.
+
+    Returns:
+    list of str: A list of imported module names.
+    """
     with open(file_path, 'r') as file:
         file_content = file.read()
 
@@ -64,6 +102,15 @@ def get_imports(file_path):
 
 
 def install_dependencies(modules):
+    """
+    Installs the specified Python modules using pip.
+
+    Parameters:
+    modules (list of str): A list of module names to install.
+
+    Returns:
+    None
+    """
     for module in modules:
         try:
             result = subprocess.run(
@@ -79,12 +126,32 @@ def install_dependencies(modules):
 
 
 def dynamic_import(module_name, function_name):
+    """
+    Dynamically imports a function from a specified module.
+
+    Parameters:
+    module_name (str): The name of the module to import from.
+    function_name (str): The name of the function to import.
+
+    Returns:
+    function: The imported function.
+    """
     module = importlib.import_module(module_name)
     function = getattr(module, function_name)
     return function
 
 
 def get_function_signature_and_types(file_path, function_name):
+    """
+    Extracts the type hints and argument types of a specified function in the given file.
+
+    Parameters:
+    file_path (str): The path to the file to analyze.
+    function_name (str): The name of the function to analyze.
+
+    Returns:
+    dict: A dictionary with argument names as keys and their types as values.
+    """
     with open(file_path, 'r') as file:
         file_content = file.read()
 
@@ -103,8 +170,15 @@ def get_function_signature_and_types(file_path, function_name):
 
 
 def create_pydantic_instance(model_class):
-    # For demonstration, create an instance with some sample data
-    # In practice, you might want to populate this with actual data
+    """
+    Creates an instance of a Pydantic model class with sample data.
+
+    Parameters:
+    model_class (type): The Pydantic model class to instantiate.
+
+    Returns:
+    BaseModel: An instance of the specified Pydantic model class.
+    """
     sample_data = {}
     for field_name, field_type in model_class.__annotations__.items():
         if field_type == int:
@@ -123,6 +197,15 @@ def create_pydantic_instance(model_class):
 
 
 def determine_needed_imports(type_hints):
+    """
+    Determines the necessary import statements based on type hints.
+
+    Parameters:
+    type_hints (dict): A dictionary with argument names as keys and their types as values.
+
+    Returns:
+    list of str: A list of import statements needed for the type hints.
+    """
     needed_imports = []
     current_globals = globals()
     for hint in type_hints.values():
@@ -137,6 +220,13 @@ def determine_needed_imports(type_hints):
 
 
 def download_and_import_agent():
+    """
+    Downloads a Python file from a specified GitHub URL, adds necessary imports,
+    installs dependencies, and dynamically imports a specified function.
+
+    Returns:
+    function: The dynamically imported function, or None if the function is not found.
+    """
     # URL of the file to download from GitHub
     file_url = ('https://raw.githubusercontent.com/BenderScript/agent_composer/main/agent_composer/resources'
                 '/remote_agents/chatbot.py')
@@ -163,7 +253,7 @@ def download_and_import_agent():
 
     # Step 6: Get function signature and type hints without importing
     desired_function_name = 'chatbot'
-    if desired_function_name in function_names:
+    if (desired_function_name in function_names):
         # Get function signature and type hints
         type_hints = get_function_signature_and_types(save_path, desired_function_name)
         print(f"Type hints of {desired_function_name}: {type_hints}")
@@ -175,8 +265,7 @@ def download_and_import_agent():
         add_imports_to_file(save_path, needed_imports)
 
         # Step 9: Dynamically import the function with the necessary imports included
-        module_name = os.path.basename(save_path).replace('.py',
-                                                          '')
+        module_name = os.path.basename(save_path).replace('.py', '')
         composed_agent = dynamic_import(module_name, desired_function_name)
         print(f"Dynamically imported function: {composed_agent.__name__}")
 
@@ -194,6 +283,13 @@ def download_and_import_agent():
 
 
 def main():
+    """
+    The main function that initializes the environment, downloads and imports the agent,
+    builds a LangGraph, and provides an interactive interface for user interaction.
+
+    Returns:
+    None
+    """
     # Load the .env file
     path = find_dotenv()
     print(path)
@@ -211,7 +307,7 @@ def main():
         if user_input.lower() in ["quit", "exit", "q"]:
             print("Goodbye!")
             break
-        for event in graph.stream({"messages": ("user", user_input)}):
+        for event in graph.stream({"messages": [("user", user_input)]}):
             for value in event.values():
                 print("Assistant:", value["messages"][-1].content)
 
