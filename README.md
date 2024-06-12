@@ -42,6 +42,30 @@ The architecture of the program consists of several key components:
     - `determine_needed_imports(type_hints)`: Determines the necessary import statements based on type hints.
     - `download_and_import_agent()`: Orchestrates the process of downloading, modifying, analyzing, installing, and importing the agent function.
 
+## Flow
+
+```mermaid
+graph TD
+    A[Start] --> B[Load env File]
+    B --> C[Download Agent from GitHub]
+    C --> D[Parse File to Get Import Statements]
+    D --> E[Install Dependencies]
+    E --> F[Parse File to Get Function Names]
+    F --> G{Is 'chatbot' in Function Names?}
+    G -->|Yes| H[Get Function Signature and Type Hints]
+    H --> I[Determine Necessary Imports]
+    I --> J[Add Necessary Imports to the File]
+    J --> K[Dynamically Import the Function]
+    K --> M[Return Composed Agent Function]
+    G -->|No| N[Print Error Message] --> S[END]
+    M --> O[Build LangGraph Using the Downloaded Agent]
+    N --> O
+    O --> P[Set Entry and Finish Points of the Graph]
+    P --> Q[Compile the Graph]
+    Q --> R[Provide Interactive User Interface]
+    R --> S[End]
+```
+
 ## Usage
 
 1. Ensure you have the necessary environment variables set in a `.env` file.

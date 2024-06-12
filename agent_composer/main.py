@@ -253,7 +253,7 @@ def download_and_import_agent():
 
     # Step 6: Get function signature and type hints without importing
     desired_function_name = 'chatbot'
-    if (desired_function_name in function_names):
+    if desired_function_name in function_names:
         # Get function signature and type hints
         type_hints = get_function_signature_and_types(save_path, desired_function_name)
         print(f"Type hints of {desired_function_name}: {type_hints}")
