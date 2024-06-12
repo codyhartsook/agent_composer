@@ -19,6 +19,17 @@ def download_file_from_github(url, save_path):
         file.write(response.content)
 
 
+def add_imports_to_file(file_path, imports):
+    with open(file_path, 'r') as file:
+        content = file.read()
+
+    # Add the necessary imports at the beginning of the file
+    new_content = '\n'.join(imports) + '\n' + content
+
+    with open(file_path, 'w') as file:
+        file.write(new_content)
+
+
 def get_function_names(file_path):
     with open(file_path, 'r') as file:
         file_content = file.read()
@@ -68,16 +79,28 @@ def install_dependencies(modules):
             print(f"Failed to install {module}:\n{e.stderr}")
 
 
-def import_function(module_name, function_name):
+def dynamic_import(module_name, function_name):
     module = importlib.import_module(module_name)
     function = getattr(module, function_name)
     return function
 
 
-def get_function_signature_and_types(function):
-    signature = inspect.signature(function)
-    type_hints = typing.get_type_hints(function)
-    return signature, type_hints
+def get_function_signature_and_types(file_path, function_name):
+    with open(file_path, 'r') as file:
+        file_content = file.read()
+
+    # Parse the file content
+    tree = ast.parse(file_content, filename=file_path)
+
+    # Find the function definition
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == function_name:
+            # Extract argument type hints
+            arg_types = {}
+            for arg in node.args.args:
+                if arg.annotation:
+                    arg_types[arg.arg] = eval(arg.annotation.id, globals())
+            return arg_types
 
 
 def create_pydantic_instance(model_class):
@@ -100,6 +123,20 @@ def create_pydantic_instance(model_class):
     return model_class(**sample_data)
 
 
+def determine_needed_imports(type_hints):
+    needed_imports = []
+    current_globals = globals()
+    for hint in type_hints.values():
+        if isinstance(hint, type):
+            module_name = hint.__module__
+            class_name = hint.__name__
+            # Check if this module is already imported in the main script
+            if class_name in current_globals:
+                import_statement = f'from {module_name} import {class_name}'
+                needed_imports.append(import_statement)
+    return needed_imports
+
+
 def main():
     # Load the .env file
     path = find_dotenv()
@@ -107,7 +144,8 @@ def main():
     load_dotenv(override=True, verbose=True)
 
     # URL of the file to download from GitHub
-    file_url = 'https://raw.githubusercontent.com/BenderScript/agent_composer/main/resources/remote_agents/chatbot.py'
+    file_url = ('https://raw.githubusercontent.com/BenderScript/agent_composer/main/agent_composer/resources'
+                '/remote_agents/chatbot.py')
     # Path where the downloaded file will be saved
     save_path = 'resources/local_agents/chatbot.py'
 
@@ -129,34 +167,39 @@ def main():
     function_names = get_function_names(save_path)
     print(f"Functions in {save_path}: {function_names}")
 
-    # Step 6: Dynamically import and use the function
+    # Step 6: Get function signature and type hints without importing
     desired_function_name = 'chatbot'
     if desired_function_name in function_names:
+        # Get function signature and type hints
+        type_hints = get_function_signature_and_types(save_path, desired_function_name)
+        print(f"Type hints of {desired_function_name}: {type_hints}")
+
+        # Step 7: Determine necessary imports based on type hints
+        needed_imports = determine_needed_imports(type_hints)
+
+        # Step 8: Add necessary imports to the file
+        add_imports_to_file(save_path, needed_imports)
+
+        # Step 9: Dynamically import the function with the necessary imports included
         module_name = os.path.basename(save_path).replace('.py',
                                                           '')
-
-        # Dynamically import the function
-        process_data = import_function(module_name, desired_function_name)
-
-        # Get function signature and type hints
-        signature, type_hints = get_function_signature_and_types(process_data)
-        print(f"Signature of {desired_function_name}: {signature}")
-        print(f"Type hints of {desired_function_name}: {type_hints}")
+        composed_agent = dynamic_import(module_name, desired_function_name)
+        print(f"Dynamically imported function: {composed_agent.__name__}")
 
         # Identify Pydantic types and create instances
         for param_name, param_type in type_hints.items():
             if isinstance(param_type, type) and issubclass(param_type, BaseModel):
                 print(f"{param_name} is of Pydantic type {param_type}")
-                # Create an instance of the Pydantic model
-                try:
-                    input_data = create_pydantic_instance(param_type)
-                    print(f"Created instance for {param_name}: {input_data}")
-                except ValidationError as e:
-                    print(f"Validation error: {e}")
-
-                # Call the function with the created instance
-                result = process_data(input_data)
-                print(f"Result: {result}")
+                # # Create an instance of the Pydantic model
+                # try:
+                #     input_data = create_pydantic_instance(param_type)
+                #     print(f"Created instance for {param_name}: {input_data}")
+                # except ValidationError as e:
+                #     print(f"Validation error: {e}")
+                #
+                # # Call the function with the created instance
+                # result = composed_agent(input_data)
+                # print(f"Result: {result}")
             else:
                 print(f"{param_name} is of type {param_type}, which is not a Pydantic model.")
     else:
