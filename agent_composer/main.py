@@ -4,9 +4,7 @@ import requests
 import sys
 import importlib
 import ast
-import inspect
-import typing
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 from dotenv import load_dotenv, find_dotenv
 from models.session_config import SessionConfig
 
@@ -190,16 +188,6 @@ def main():
         for param_name, param_type in type_hints.items():
             if isinstance(param_type, type) and issubclass(param_type, BaseModel):
                 print(f"{param_name} is of Pydantic type {param_type}")
-                # # Create an instance of the Pydantic model
-                # try:
-                #     input_data = create_pydantic_instance(param_type)
-                #     print(f"Created instance for {param_name}: {input_data}")
-                # except ValidationError as e:
-                #     print(f"Validation error: {e}")
-                #
-                # # Call the function with the created instance
-                # result = composed_agent(input_data)
-                # print(f"Result: {result}")
             else:
                 print(f"{param_name} is of type {param_type}, which is not a Pydantic model.")
     else:
