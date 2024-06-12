@@ -14,7 +14,7 @@ from langsmith import traceable
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-@traceable(run_type="chain")
+@traceable
 def download_file_from_github(url, save_path):
     """
     Downloads a file from a specified GitHub URL and saves it locally.
@@ -33,7 +33,7 @@ def download_file_from_github(url, save_path):
         file.write(response.content)
 
 
-@traceable(run_type="chain")
+@traceable
 def add_imports_to_file(file_path, imports):
     """
     Adds the specified import statements to the beginning of the given file.
@@ -55,7 +55,7 @@ def add_imports_to_file(file_path, imports):
         file.write(new_content)
 
 
-@traceable(run_type="chain")
+@traceable
 def get_function_names(file_path):
     """
     Extracts the names of all functions defined in the specified file.
@@ -78,7 +78,7 @@ def get_function_names(file_path):
     return function_names
 
 
-@traceable(run_type="chain")
+@traceable
 def get_imports(file_path):
     """
     Extracts all import statements from the specified file.
@@ -109,7 +109,7 @@ def get_imports(file_path):
     return imported_modules
 
 
-@traceable(run_type="chain")
+@traceable
 def install_dependencies(modules):
     """
     Installs the specified Python modules using pip.
@@ -208,7 +208,7 @@ def create_pydantic_instance(model_class):
     return model_class(**sample_data)
 
 
-@traceable(run_type="chain")
+@traceable
 def determine_needed_imports(type_hints):
     """
     Determines the necessary import statements based on type hints.
@@ -232,7 +232,7 @@ def determine_needed_imports(type_hints):
     return needed_imports
 
 
-@traceable(run_type="chain")
+@traceable
 def download_and_import_agent():
     """
     Downloads a Python file from a specified GitHub URL, adds necessary imports,
@@ -296,7 +296,7 @@ def download_and_import_agent():
     return None
 
 
-@traceable(run_type="chain")
+@traceable
 def main():
     """
     The main function that initializes the environment, downloads and imports the agent,
