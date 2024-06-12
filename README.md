@@ -66,6 +66,22 @@ graph TD
     R --> S[End]
 ```
 
+## Issues
+
+- Agent Dependencies:
+  - Find
+  - List
+  - Install
+  - Public and private dependencies
+- Graph state
+  - Does Agent request more fields are put in StateGraph?
+  - Does Agent get unfettered access to StateGraph?
+  - Is a 3P Agent on a subgraph of its own due to security concerns?
+- API Access:
+  - What if Agent needs access to, say, a database?
+
+ 	
+
 ## Usage
 
 1. Ensure you have the necessary environment variables set in a `.env` file.
