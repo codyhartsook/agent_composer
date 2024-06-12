@@ -7,12 +7,17 @@ import inspect
 import typing
 from pydantic import BaseModel, ValidationError
 
+from dotenv import load_dotenv, find_dotenv
+import os
+
+
 def download_file_from_github(url, save_path):
     response = requests.get(url)
     response.raise_for_status()  # Check if the request was successful
 
     with open(save_path, 'wb') as file:
         file.write(response.content)
+
 
 def get_function_names(file_path):
     with open(file_path, 'r') as file:
@@ -26,15 +31,18 @@ def get_function_names(file_path):
 
     return function_names
 
+
 def import_function(module_name, function_name):
     module = importlib.import_module(module_name)
     function = getattr(module, function_name)
     return function
 
+
 def get_function_signature_and_types(function):
     signature = inspect.signature(function)
     type_hints = typing.get_type_hints(function)
     return signature, type_hints
+
 
 def create_pydantic_instance(model_class):
     # For demonstration, create an instance with some sample data
@@ -55,6 +63,12 @@ def create_pydantic_instance(model_class):
             sample_data[field_name] = None
     return model_class(**sample_data)
 
+
+# Load the .env file
+path = find_dotenv()
+print(path)
+load_dotenv(override=True, verbose=True)
+
 # URL of the file to download from GitHub
 file_url = 'https://raw.githubusercontent.com/username/repository/branch/path/to/file.py'
 # Path where the downloaded file will be saved
@@ -74,7 +88,8 @@ print(f"Functions in {save_path}: {function_names}")
 # Step 4: Dynamically import and use the function
 desired_function_name = 'process_data'
 if desired_function_name in function_names:
-    module_name = os.path.basename(save_path).replace('.py', '')  # The name of the module (file name without .py extension)
+    module_name = os.path.basename(save_path).replace('.py',
+                                                      '')  # The name of the module (file name without .py extension)
 
     # Dynamically import the function
     process_data = import_function(module_name, desired_function_name)
