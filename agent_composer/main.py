@@ -305,11 +305,6 @@ def main():
     Returns:
     None
     """
-    # Load the .env file
-    path = find_dotenv()
-    logging.info(path)
-    load_dotenv(override=True, verbose=True)
-
     chatbot_agent = download_and_import_agent()
     graph_builder = StateGraph(AgentState)
     graph_builder.add_node("chatbot_agent", chatbot_agent)
@@ -328,4 +323,8 @@ def main():
 
 
 if __name__ == "__main__":
+    # Load the .env file
+    path = find_dotenv()
+    logging.info(path)
+    load_dotenv(override=True, verbose=True)
     main()
