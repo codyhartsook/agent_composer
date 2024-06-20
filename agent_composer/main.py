@@ -10,6 +10,7 @@ from dotenv import load_dotenv, find_dotenv
 from models.agent_state import AgentState
 from langgraph.graph import StateGraph
 from langsmith import traceable
+from resources.virtual_node.virtual_node import VirtualNode
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -305,9 +306,14 @@ def main():
     Returns:
     None
     """
-    chatbot_agent = download_and_import_agent()
+    #chatbot_agent = download_and_import_agent()
+
+    # load a virtual node
+    chatbot_v_node = VirtualNode("sandbox", "langgraph.chatbot") # namespace, agent_name
+    
     graph_builder = StateGraph(AgentState)
-    graph_builder.add_node("chatbot_agent", chatbot_agent)
+    #graph_builder.add_node("chatbot_agent", chatbot_agent)
+    graph_builder.add_node("chatbot_agent", chatbot_v_node.invoke)
     graph_builder.set_entry_point("chatbot_agent")
     graph_builder.set_finish_point("chatbot_agent")
     graph = graph_builder.compile()

@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: langgraph.chatbot
+  namespace: sandbox
+  description: |
+    I am a general purpose chatbot.
+spec:
+  type: agent
+  lifecycle: experimental
+  owner: chartsoo@cisco.com
+  access_level: PRIVATE
+  category: Natural Language

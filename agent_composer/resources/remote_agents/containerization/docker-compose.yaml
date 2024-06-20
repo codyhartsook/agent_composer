@@ -1,0 +1,8 @@
+services:
+  chatbot:
+    image: chatbot:latest
+    container_name: chatbot
+    build:
+      args:
+        - DEVPI_IP=${DEVPI_IP}
+        - SDK_VERSION=${SDK_VERSION}
